@@ -125,8 +125,6 @@ Open the dashboard:
 
 - Dashboard: http://localhost:8080
 - API documentation: http://localhost:8000/docs
-- API health: http://localhost:8000/api/health
-- MediaMTX HLS interface: http://localhost:8888
 
 To run the optional FFmpeg publisher and DeepStream services:
 
