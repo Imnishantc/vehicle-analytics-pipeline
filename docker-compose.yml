@@ -1,0 +1,78 @@
+# Full stack. GPU service is behind the "gpu" profile:
+#   docker compose up -d                    # db, api, dashboard, mediamtx
+#   docker compose --profile gpu up -d      # + publisher + DeepStream (needs NVIDIA runtime)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports: ["127.0.0.1:5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 10
+
+  mediamtx:
+    image: bluenviron/mediamtx:1.9.3
+    volumes: ["./mediamtx/mediamtx.yml:/mediamtx.yml:ro"]
+    ports: ["8554:8554", "8888:8888", "127.0.0.1:9997:9997"]
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+    depends_on: { db: { condition: service_healthy } }
+    ports: ["8000:8000"]
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args: { VITE_HLS_URL: "${VITE_HLS_URL:-}" }
+    depends_on: [backend]
+    ports: ["8080:80"]
+
+  publisher:            # loops ./videos/traffic.mp4 into MediaMTX (supply your own video)
+    profiles: ["gpu"]
+    image: linuxserver/ffmpeg:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        while true; do ffmpeg -hide_banner -re -stream_loop -1 -i /videos/traffic.mp4 -an -c:v libx264
+        -preset veryfast -tune zerolatency -pix_fmt yuv420p -g 30 -f rtsp -rtsp_transport tcp
+        rtsp://mediamtx:8554/traffic; sleep 3; done
+    volumes: ["./videos:/videos:ro"]
+    depends_on: [mediamtx]
+
+  deepstream:
+    profiles: ["gpu"]
+    build:
+      context: .
+      dockerfile: deepstream/Dockerfile
+    entrypoint: ["/bin/bash", "-lc"]
+    command:
+       - 'bash /app/prepare_models.sh && exec python3 -u -m vds.pipeline --config /app/config/pipeline.yml'
+
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      RTSP_URL: rtsp://mediamtx:8554/traffic
+    volumes:
+      - engines:/opt/vds/engines
+      - ./deepstream/models/Secondary_CarColor:/opt/vds/models/Secondary_CarColor:ro
+    depends_on: { db: { condition: service_healthy }, mediamtx: { condition: service_started } }
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu, video, compute, utility] }]
+
+volumes:
+  pgdata:
+  engines:

@@ -1,0 +1,1 @@
+"""Vehicle analytics DeepStream application."""

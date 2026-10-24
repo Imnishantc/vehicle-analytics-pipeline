@@ -1,0 +1,30 @@
+# Secondary classifier (SGIE): NVIDIA sample "Secondary_CarColor" (ResNet18, Caffe).
+# Runs on vehicle crops only (process-mode=2, operate-on-gie-id=1, operate-on-class-ids=0 = Car).
+# Output classes (labels.txt): black, blue, brown, gold, green, grey, maroon, orange,
+# red, silver, white, yellow. Softmax output; the top-1 label/probability is read
+# in the probe from NvDsClassifierMeta (unique_component_id=2).
+[property]
+gpu-id=0
+net-scale-factor=1
+model-file=/opt/vds/models/Secondary_CarColor/resnet18.caffemodel
+proto-file=/opt/vds/models/Secondary_CarColor/resnet18.prototxt
+mean-file=/opt/vds/models/Secondary_CarColor/mean.ppm
+labelfile-path=/opt/vds/models/Secondary_CarColor/labels.txt
+model-engine-file=/opt/vds/engines/color_resnet18_b16_gpu0_fp16.engine
+force-implicit-batch-dim=1
+batch-size=16
+network-mode=2
+model-color-format=1
+process-mode=2
+network-type=1
+is-classifier=1
+output-blob-names=predictions/Softmax
+classifier-async-mode=1
+classifier-threshold=0.51
+input-object-min-width=64
+input-object-min-height=64
+operate-on-gie-id=1
+operate-on-class-ids=0
+# Re-classify a tracked object every N frames (colour is stable; saves GPU).
+secondary-reinfer-interval=30
+gie-unique-id=2

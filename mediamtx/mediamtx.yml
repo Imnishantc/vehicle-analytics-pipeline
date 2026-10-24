@@ -1,0 +1,24 @@
+# MediaMTX configuration (tested keys follow MediaMTX v1.x).
+logLevel: info
+
+rtsp: yes
+rtspAddress: :8554
+protocols: [tcp, udp]       # RTSP over TCP is the most reliable for the DeepStream client
+
+hls: yes
+hlsAddress: :8888
+hlsAlwaysRemux: yes          # keep HLS segments flowing while a publisher is connected
+hlsAllowOrigin: '*'          # dashboard dev server runs on another origin; restrict in production
+
+webrtc: no
+rtmp: no
+srt: no
+
+api: yes
+apiAddress: 127.0.0.1:9997   # health/inspection API (not exposed outside the container host)
+
+paths:
+  traffic:                   # FFmpeg publishes here: rtsp://<host>:8554/traffic
+    source: publisher
+  annotated:                 # optional: DeepStream OSD output (boxes + IDs), see docs/setup.md
+    source: publisher

@@ -1,0 +1,32 @@
+# NvDCF tracker (libnvds_nvmultiobjecttracker.so). Minimal config derived from the
+# defaults shipped in DeepStream's config_tracker_NvDCF_perf.yml; unspecified keys
+# take library defaults. For tuning see the DeepStream "Gst-nvtracker" docs.
+BaseConfig:
+  minDetectorConfidence: 0.3
+
+TargetManagement:
+  enableBboxUnClipping: 1
+  maxTargetsPerStream: 150
+  minIouDiff4NewTarget: 0.5
+  minTrackerConfidence: 0.2
+  probationAge: 3
+  maxShadowTrackingAge: 30     # keeps an ID through ~1 s of occlusion at 30 fps
+  earlyTerminationAge: 1
+
+TrajectoryManagement:
+  useUniqueID: 0
+
+DataAssociator:
+  dataAssociatorType: 0
+  associationMatcherType: 0
+  checkClassMatch: 1
+  minMatchingScore4Overall: 0.0
+  minMatchingScore4SizeSimilarity: 0.5
+  minMatchingScore4Iou: 0.1
+  minMatchingScore4VisualSimilarity: 0.2
+
+StateEstimator:
+  stateEstimatorType: 1
+
+VisualTracker:
+  visualTrackerType: 1

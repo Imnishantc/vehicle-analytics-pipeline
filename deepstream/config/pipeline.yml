@@ -1,0 +1,48 @@
+# Runtime configuration for deepstream/src/vds/pipeline.py
+stream_id: cam-1
+rtsp_url: rtsp://mediamtx:8554/traffic     # override with RTSP_URL env var
+reconnect_interval_s: 5
+rtsp_latency_ms: 200
+
+mux:
+  width: 1280      # line coordinates below are in THIS coordinate space
+  height: 720
+
+# Counting line in muxed-frame pixels. Direction "in" = anchor moves from the right
+# of P1->P2 to the left (image coordinates, y down); adjust labels if reversed.
+
+lines:
+  - id: near-lane
+    x1: 350
+    y1: 450
+    x2: 850
+    y2: 450
+    margin: 4
+    ttl_frames: 150
+    direction_labels: [in, out]
+
+  - id: far-lane
+    x1: 650
+    y1: 330
+    x2: 1180
+    y2: 330
+    margin: 4
+    ttl_frames: 150
+    direction_labels: [in, out]
+
+vehicle_classes: [car]
+enable_color_classifier: false
+
+pgie_config: config/config_infer_primary.txt
+sgie_config: config/config_infer_secondary_color.txt
+tracker:
+  config: config/tracker_NvDCF.yml
+  width: 640
+  height: 384
+sink: fakesink          # use nveglglessink with a display, or fakesink for headless
+
+# Publish the OSD-rendered video to MediaMTX for dashboard playback.
+annotated_rtsp_url: rtsp://mediamtx:8554/annotated
+output_bitrate: 4000000
+output_iframe_interval: 30
+output_idr_interval: 30

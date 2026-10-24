@@ -1,0 +1,62 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+frontend/dist/
+videos/
+*.mp4
+*.engine
+failed_events.jsonl
+tools/
+*.log
+.vscode/
+.idea/
+# Recruitment assignment text is confidential; do not commit it
+assignment*.pdf
+
+# Local credentials and private keys
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node.js generated files
+node_modules/
+frontend/dist/
+
+# Backups, logs, and generated artifacts
+*.bak
+*.log
+.DS_Store
+
+# Generated model and TensorRT files
+*.engine
+*.plan
+
+# Local development certificates
+*.crt
+
+# Local source backups
+*.before_color_fix
+
+# Experimental vehicle color-classifier assets (out of current scope)
+experiments/color-classifier/
+deepstream/models/Secondary_CarColor/
+deepstream/models/Secondary_CarColor.zip
+
+# Local traffic media; provide your own licensed sample video
+videos/*.mp4
+traffic-frame.jpg
